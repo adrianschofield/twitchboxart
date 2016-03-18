@@ -1,0 +1,28 @@
+/*
+Simple CSS which as far as I can tell is only required to manage the size of the webpage
+
+This css was originally copied from livespace so I am leaving this in the comment.
+http://blogg.livespace.se/
+Your number #1 guide to grow YOUR Twitch channel with
+marketing, branding, growth, promtion, motivation and more.
+With over 3 years experince from working with both
+partnered and non-partnered streamers.
+http://twitch.livespace.se/
+*/
+* { margin: 0; padding: 0; }
+
+  body {
+        font-family: sans-serif;
+        font-size: 19px;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        
+   }
+    /*#image {
+        position: absolute;
+        z-index: 6001;
+        text-align: center;
+        line-height: 2.5;
+        overflow: hidden;
+    }*/
