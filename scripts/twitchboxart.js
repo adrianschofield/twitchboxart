@@ -107,6 +107,9 @@ function getGameImageUrl(gameName) {
     $.ajax({
         url: "https://api.twitch.tv/kraken/search/games?q=" + gameName + "&type=suggest",
         dataType: 'json',
+        headers: {
+            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz'
+        },
         success: getGameImageUrlCallback
     })
 
