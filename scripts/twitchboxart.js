@@ -67,12 +67,15 @@ function updateImage(url) {
 function getCurrentGame() {
    
     //If you are testing this in IE you may need to uncomment the line below to allow cross site scripting
-	//$.support.cors = true;
+	//$.support.cors = true; nfmebw2293663r1rski1j8d5vezfvpz
     
     //Using ajax here, could have used getJSON but the error handling is awful
 	$.ajax({
 	    url: "https://api.twitch.tv/kraken/channels/" + channel,
 	    dataType: 'json',
+        headers: {
+            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz'
+        },
         success: getCurrentGameCallback
 	})
     
