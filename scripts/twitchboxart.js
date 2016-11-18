@@ -36,7 +36,8 @@ $(document).ready(function start() {
     updateImage(globalBoxartUrl);
 
     //Let's get the current game straight away and update
-    getCurrentGame();
+    //getCurrentGame();
+    getChannelId();
 
     //Now let's set up polling to Twitch so that we check for new games every five minutes
 
@@ -61,6 +62,38 @@ function updateImage(url) {
     image.src = url;
 }
 
+//Need this section for Kraken v5 API calls to convert names to ids
+
+//v5 needs a Channel Id rather than a channel name
+
+function getChannelId() {
+   
+    //If you are testing this in IE you may need to uncomment the line below to allow cross site scripting
+	//$.support.cors = true; nfmebw2293663r1rski1j8d5vezfvpz
+    
+    //Using ajax here, could have used getJSON but the error handling is awful
+	$.ajax({
+	    url: "https://api.twitch.tv/kraken/search/channels?query=" + channel,
+	    dataType: 'json',
+        headers: {
+            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz',
+            'Accept': 'application/vnd.twitchtv.v5+json'
+        },
+        success: getChannelIdCallback
+	})
+    
+}
+
+function getChannelIdCallback(data) {
+
+    //We need to set the channel Id rather than the name
+    channel = data["channels"][0]["_id"];
+    //Now we can get the current game
+    getCurrentGame();
+}
+
+//End of Kraken v5 requirement
+
 //This is where we start, this function sends a request to twitch for the JSON associated with the channel
 //It sets a callback for the data and that is all
 
@@ -74,7 +107,8 @@ function getCurrentGame() {
 	    url: "https://api.twitch.tv/kraken/channels/" + channel,
 	    dataType: 'json',
         headers: {
-            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz'
+            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz',
+            'Accept': 'application/vnd.twitchtv.v5+json'
         },
         success: getCurrentGameCallback
 	})
@@ -108,10 +142,11 @@ function getGameImageUrl(gameName) {
     //$.support.cors = true;
     
     $.ajax({
-        url: "https://api.twitch.tv/kraken/search/games?q=" + gameName + "&type=suggest",
+        url: "https://api.twitch.tv/kraken/search/games?query=" + gameName + "&type=suggest",
         dataType: 'json',
         headers: {
-            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz'
+            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz',
+            'Accept': 'application/vnd.twitchtv.v5+json'
         },
         success: getGameImageUrlCallback
     })
