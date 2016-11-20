@@ -2,6 +2,7 @@
 
 //Update this value to reflect your own channel name otherwise you will get images for what I am playing
 var channel = 'unshapedadrian';
+var displayGameName = false;
 
 //The box art is available in various sizes, large is configured as default but uncomment one of the lines
 //below if you require medium or small, sizes in pixels follow each size just for info
@@ -60,6 +61,17 @@ function updateImage(url) {
 
     //update the image in the html
     image.src = url;
+}
+
+//Update the image in the html, passed the url
+function updateGameName(name) {
+
+    var text = document.getElementById("GameName");
+
+     if (name !== null && typeof name !== "undefined") {
+        text.innerHTML = name;
+    }
+
 }
 
 //Need this section for Kraken v5 API calls to convert names to ids
@@ -128,7 +140,7 @@ function getCurrentGameCallback(data) {
     else {
         globalGameName = data["game"];
     }
-
+    
     //We found a new game so we need to call into Twitch again to get the JSON for the game itself
     getGameImageUrl(globalGameName);
 }
@@ -162,6 +174,12 @@ function getGameImageUrlCallback(data) {
 
     //Now we have a new image we can update the html
     updateImage(globalBoxartUrl);
+
+    //check to see if we are displaying the Game name
+
+    if(displayGameName === true) {
+        updateGameName(globalGameName);
+    }
 }
 
 //Some debugging code, removed from final version probably

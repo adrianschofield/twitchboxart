@@ -19,6 +19,20 @@ http://twitch.livespace.se/
         overflow: hidden;
         
    }
+
+   .boxart {
+       position: relative;
+       width: 100%;
+   }
+
+   .text {
+       position: absolute;
+       width: 100%;
+       left: 10;
+       top: 350px;
+       text-align: center;
+       color: red;
+   }
     /*#image {
         position: absolute;
         z-index: 6001;
