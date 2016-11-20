@@ -2,9 +2,12 @@
 
 Display Twitch game box art in your stream with this small web page.
 
-Download all the files, there is a zip available here: http://unshapedadrian.co.uk/downloads/twitchboxart.zip and store them in a folder on your hard drive.
+Download all the files, there is a zip available here using the "Clone or Download" option on github and store them in a folder on your hard drive.
 
-Edit the file twitchboxart.js in the scripts directory and change the channel name to reflecct your channel name.
+Edit the file twitchboxart.js in the scripts directory and change the channel name to reflect your channel name.
+Edit the var displayGameName = false; to var displayGameName = true; if you want to display the Game's name across the image.
+
+This second option is still a work in progress so please use with caution.
 
 To use in OBS Studio:
 
