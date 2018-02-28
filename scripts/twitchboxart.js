@@ -169,8 +169,21 @@ function getGameImageUrl(gameName) {
 
 function getGameImageUrlCallback(data) {
 
-    //The url for the box art is deep in the JSON hence the strange array here.
-    globalBoxartUrl = data["games"]["0"]["box"][size];
+    //It's possible that there is more than result
+    //If so loop through each entry until we find an exact game name match and use that entry
+    //Otherwise just use the only entry returned
+    if(data["games"].length > 1){
+        data["games"].forEach(element => {
+            if(globalGameName === element["name"]){
+                globalBoxartUrl = element["box"][size];
+            }
+        });
+    } else {
+        //The url for the box art is deep in the JSON hence the strange array here.
+        globalBoxartUrl = data["games"]["0"]["box"][size];
+    }
+
+   
 
     //Now we have a new image we can update the html
     updateImage(globalBoxartUrl);
