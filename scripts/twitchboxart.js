@@ -23,10 +23,21 @@ var globalBoxartUrl;
 
 var defaultLargeBoxArt = 'http://static-cdn.jtvnw.net/ttv-static/404_boxart-272x380.jpg';
 
+//API calling information
+//Kraken v5 Headers
+var v5headers = new Headers();
+v5headers.append('Client-ID', 'nfmebw2293663r1rski1j8d5vezfvpz');
+v5headers.append('Accept', 'application/vnd.twitchtv.v5+json');
+v5headers.append('Content-Type', 'application/json');
 
-//This code runs when the DOM objects are initialised as defined in the jQuery documentation
+//Helix headers
+var helixheaders = new Headers();
+helixheaders.append('Client-ID', 'nfmebw2293663r1rski1j8d5vezfvpz');
 
-$(document).ready(function start() {
+//Let's get this script started when the DOM objects are initialised
+window.onload = start;
+
+function start(){
 
     //First things first let's set a global default art variable , provided one is not already present, and apply it to the html
 
@@ -44,7 +55,7 @@ $(document).ready(function start() {
 
     var myTimer = setInterval(getCurrentGame, pollTimeSec);
     
-});
+}
 
 //Update the image in the html, passed the url
 function updateImage(url) {
@@ -75,33 +86,36 @@ function updateGameName(name) {
 }
 
 //Need this section for Kraken v5 API calls to convert names to ids
-
 //v5 needs a Channel Id rather than a channel name
 
 function getChannelId() {
    
-    //If you are testing this in IE you may need to uncomment the line below to allow cross site scripting
-	//$.support.cors = true; nfmebw2293663r1rski1j8d5vezfvpz
-    
-    //Using ajax here, could have used getJSON but the error handling is awful
-	$.ajax({
-	    url: "https://api.twitch.tv/kraken/search/channels?query=" + channel,
-	    dataType: 'json',
-        headers: {
-            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz',
-            'Accept': 'application/vnd.twitchtv.v5+json'
-        },
-        success: getChannelIdCallback
-	})
-    
-}
+    //Rewritten to use fetch rather than ajax
 
-function getChannelIdCallback(data) {
+    //Some detailed comments so I remember what I did
+    //Set up the request, we need url, method and headers which are defined as globals to aid reuse
+    var request = new Request('https://api.twitch.tv/kraken/search/channels?query=' + channel, {
+        headers: v5headers,
+        method: 'GET'
+    });
 
-    //We need to set the channel Id rather than the name
-    channel = data["channels"][0]["_id"];
-    //Now we can get the current game
-    getCurrentGame();
+    //Make the call using fetch, which returns a promise
+    //When the fetch succeeds return the response as json
+    //Then manage the data it contained
+    //Catch just in case
+    fetch(request).then(function(response) {
+        //Success, return the response as JSON
+        return response.json();
+    }).then(function (data){
+        //Data contains the JSON from the response
+        //Update the global variable with the channel id rather than the name
+        channel = data["channels"][0]["_id"];
+        //Now we can get the current game
+        getCurrentGame();
+    }).catch(function (err) {
+       console.log(err);
+    });
+    
 }
 
 //End of Kraken v5 requirement
