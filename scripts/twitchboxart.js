@@ -4,12 +4,14 @@
 var channel = 'unshapedadrian';
 var displayGameName = false;
 
+//TODO remove when happy with using Helix
 //The box art is available in various sizes, large is configured as default but uncomment one of the lines
 //below if you require medium or small, sizes in pixels follow each size just for info
 
-var size = 'large';//272px x 380px
+//var size = 'large';//272px x 380px
 //var size = 'medium'; //136px x 190px
 //var size = 'small'; //52px x 72px
+
 
 //How often should we poll to check if the game has changed, default every five minutes
 var pollTimeSec = 300000;
@@ -35,9 +37,7 @@ var helixheaders = new Headers();
 helixheaders.append('Client-ID', 'nfmebw2293663r1rski1j8d5vezfvpz');
 
 //Let's get this script started when the DOM objects are initialised
-window.onload = start;
-
-function start(){
+window.onload = function (){
 
     //First things first let's set a global default art variable , provided one is not already present, and apply it to the html
 
@@ -124,69 +124,62 @@ function getChannelId() {
 //It sets a callback for the data and that is all
 
 function getCurrentGame() {
-   
-    //If you are testing this in IE you may need to uncomment the line below to allow cross site scripting
-	//$.support.cors = true; nfmebw2293663r1rski1j8d5vezfvpz
-    
-    //Using ajax here, could have used getJSON but the error handling is awful
-	$.ajax({
-	    url: "https://api.twitch.tv/kraken/channels/" + channel,
-	    dataType: 'json',
-        headers: {
-            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz',
-            'Accept': 'application/vnd.twitchtv.v5+json'
-        },
-        success: getCurrentGameCallback
-	})
+
+
+    var request = new Request('https://api.twitch.tv/kraken/channels/' + channel, {
+        headers: v5headers,
+        method: 'GET'
+    });
+
+    //Make the call using fetch, which returns a promise
+    //When the fetch succeeds return the response as json
+    //Then manage the data it contained
+    //Catch just in case
+    fetch(request).then(function(response) {
+        //Success, return the response as JSON
+        return response.json();
+    }).then(function (data){
+        if (data["game"] === globalGameName) {
+            return;
+        }
+        else {
+            globalGameName = data["game"];
+        }
+        //We found a new game so we need to call into Twitch again to get the JSON for the game itself
+        getGameImageUrl(globalGameName);
+    }).catch(function (err) {
+       console.log(err);
+    });
     
 }
    
-//This is the callback for getCurrentGame that handles the data once the call to Twitch has completed
-
-function getCurrentGameCallback(data) {
-
-    //if the game name is the same we don't need to make the second call as we already have the url
-    //stored in the global
-
-    if (data["game"] === globalGameName) {
-        return;
-    }
-    else {
-        globalGameName = data["game"];
-    }
-    
-    //We found a new game so we need to call into Twitch again to get the JSON for the game itself
-    getGameImageUrl(globalGameName);
-}
-
 //This function sends a request to twitch for the JSON associated with the game
 //It sets a callback for the data and that is all
 
 function getGameImageUrl(gameName) {
 
-    //If you are testing this in IE you may need to uncomment the line below to allow cross site scripting
-    //$.support.cors = true;
-    
-    $.ajax({
-        url: "https://api.twitch.tv/kraken/search/games?query=" + gameName + "&type=suggest",
-        dataType: 'json',
-        headers: {
-            'Client-ID': 'nfmebw2293663r1rski1j8d5vezfvpz',
-            'Accept': 'application/vnd.twitchtv.v5+json'
-        },
-        success: getGameImageUrlCallback
-    })
+    /* var request = new Request("https://api.twitch.tv/kraken/search/games?query=" + gameName + "&type=suggest", {
+        headers: v5headers,
+        method: 'GET'
+    }); */
 
-}
+    var request = new Request("https://api.twitch.tv/helix/games?name=" + gameName, {
+        headers: helixheaders,
+        method: 'GET'
+    });
 
-//This is the callback for getGameImageUrl that handles the data once the call to Twitch has completed
-
-function getGameImageUrlCallback(data) {
-
+    //Make the call using fetch, which returns a promise
+    //When the fetch succeeds return the response as json
+    //Then manage the data it contained
+    //Catch just in case
+    fetch(request).then(function(response) {
+        //Success, return the response as JSON
+        return response.json();
+    }).then(function (json){
     //It's possible that there is more than result
     //If so loop through each entry until we find an exact game name match and use that entry
     //Otherwise just use the only entry returned
-    if(data["games"].length > 1){
+    /* if(data["games"].length > 1){
         data["games"].forEach(element => {
             if(globalGameName === element["name"]){
                 globalBoxartUrl = element["box"][size];
@@ -195,10 +188,17 @@ function getGameImageUrlCallback(data) {
     } else {
         //The url for the box art is deep in the JSON hence the strange array here.
         globalBoxartUrl = data["games"]["0"]["box"][size];
+    } */
+    if (json.data.length > 1) {
+        json.data.forEach(element => {
+            if(globalGameName === element.name) {
+                globalBoxartUrl = element.box_art_url.replace("{width}x{height}", "272x380");
+            }
+        });
+        
+    } else {
+        globalBoxartUrl = json.data[0].box_art_url.replace("{width}x{height}", "272x380");
     }
-
-   
-
     //Now we have a new image we can update the html
     updateImage(globalBoxartUrl);
 
@@ -207,14 +207,12 @@ function getGameImageUrlCallback(data) {
     if(displayGameName === true) {
         updateGameName(globalGameName);
     }
+    }).catch(function (err) {
+       console.log(err);
+    });
+
 }
 
-//Some debugging code, removed from final version probably
-
-/*function upDateText(comment) {
-	$('#res').html(comment);
-	//document.getElementById('res').value = comment;
-}*/
 
 // A Sample that I found on the internet.
 /*Sample scripts<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
