@@ -3,6 +3,7 @@
 //Update this value to reflect your own channel name otherwise you will get images for what I am playing
 var channel = 'unshapedadrian';
 var displayGameName = false;
+var oAuthToken = '';
 
 //TODO remove when happy with using Helix
 //The box art is available in various sizes, large is configured as default but uncomment one of the lines
@@ -20,6 +21,7 @@ var pollTimeSec = 300000;
 //Do not change anything below this line unless you are familiar with javascript and jQuery
 //Some globals that track what urls and game we are using as well as a default image.
 
+var globalGameId;
 var globalGameName;
 var globalBoxartUrl;
 
@@ -35,6 +37,10 @@ v5headers.append('Content-Type', 'application/json');
 //Helix headers
 var helixheaders = new Headers();
 helixheaders.append('Client-ID', 'nfmebw2293663r1rski1j8d5vezfvpz');
+if (oAuthToken !== '') {
+    helixheaders.append('Authorization', 'Bearer ' + oAuthToken);
+}
+
 
 //Let's get this script started when the DOM objects are initialised
 window.onload = function (){
@@ -94,8 +100,13 @@ function getChannelId() {
 
     //Some detailed comments so I remember what I did
     //Set up the request, we need url, method and headers which are defined as globals to aid reuse
-    var request = new Request('https://api.twitch.tv/kraken/search/channels?query=' + channel, {
-        headers: v5headers,
+    //var request = new Request('https://api.twitch.tv/kraken/search/channels?query=' + channel, {
+    //    headers: v5headers,
+    //    method: 'GET'
+    //});
+
+    var request = new Request('https://api.twitch.tv/helix/users?login=' + channel, {
+        headers: helixheaders,
         method: 'GET'
     });
 
@@ -106,10 +117,11 @@ function getChannelId() {
     fetch(request).then(function(response) {
         //Success, return the response as JSON
         return response.json();
-    }).then(function (data){
+    }).then(function (json){
         //Data contains the JSON from the response
         //Update the global variable with the channel id rather than the name
-        channel = data["channels"][0]["_id"];
+        //channel = data["channels"][0]["_id"];
+        channel = json.data[0]["id"];
         //Now we can get the current game
         getCurrentGame();
     }).catch(function (err) {
@@ -125,9 +137,15 @@ function getChannelId() {
 
 function getCurrentGame() {
 
+    //var request = new Request('https://api.twitch.tv/kraken/channels/' + channel, {
+    //    headers: v5headers,
+    //    method: 'GET'
+    //});
 
-    var request = new Request('https://api.twitch.tv/kraken/channels/' + channel, {
-        headers: v5headers,
+    // With the new API it looks like you can only do this when the stream is live
+
+    var request = new Request('https://api.twitch.tv/helix/streams?user_id=' + channel, {
+        headers: helixheaders,
         method: 'GET'
     });
 
@@ -138,15 +156,19 @@ function getCurrentGame() {
     fetch(request).then(function(response) {
         //Success, return the response as JSON
         return response.json();
-    }).then(function (data){
-        if (data["game"] === globalGameName) {
-            return;
+    }).then(function (json){
+        // data is an array if it has length zero the player is offline so do nothing
+        if (json.data.length > 0){
+            if (json.data[0]["game_id"] === globalGameId) {
+                return;
+            }
+            else {
+                globalGameId = json.data[0]["game_id"];
+            }
+            //We found a new game so we need to call into Twitch again to get the JSON for the game itself
+            getGameImageUrl(globalGameId);
         }
-        else {
-            globalGameName = data["game"];
-        }
-        //We found a new game so we need to call into Twitch again to get the JSON for the game itself
-        getGameImageUrl(globalGameName);
+        
     }).catch(function (err) {
        console.log(err);
     });
@@ -156,14 +178,14 @@ function getCurrentGame() {
 //This function sends a request to twitch for the JSON associated with the game
 //It sets a callback for the data and that is all
 
-function getGameImageUrl(gameName) {
+function getGameImageUrl(gameId) {
 
     /* var request = new Request("https://api.twitch.tv/kraken/search/games?query=" + gameName + "&type=suggest", {
         headers: v5headers,
         method: 'GET'
     }); */
 
-    var request = new Request("https://api.twitch.tv/helix/games?name=" + gameName, {
+    var request = new Request("https://api.twitch.tv/helix/games?id=" + gameId, {
         headers: helixheaders,
         method: 'GET'
     });
@@ -193,11 +215,13 @@ function getGameImageUrl(gameName) {
         json.data.forEach(element => {
             if(globalGameName === element.name) {
                 globalBoxartUrl = element.box_art_url.replace("{width}x{height}", "272x380");
+                globalGameName = element.name;
             }
         });
         
     } else {
         globalBoxartUrl = json.data[0].box_art_url.replace("{width}x{height}", "272x380");
+        globalGameName = json.data[0].name;
     }
     //Now we have a new image we can update the html
     updateImage(globalBoxartUrl);
@@ -212,19 +236,3 @@ function getGameImageUrl(gameName) {
     });
 
 }
-
-
-// A Sample that I found on the internet.
-/*Sample scripts<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
-<script>
-$.getJSON('https://api.twitch.tv/kraken/streams/Jonathan_x64', function(channel) {
-
-    if (channel["stream"] == null) { 
-        window.alert("nie wow");
-
-    } else {
-        window.alert("wow");
-    
-    }
-});
-</script>*/
