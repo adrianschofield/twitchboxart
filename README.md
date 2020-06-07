@@ -1,5 +1,7 @@
 # twitchboxart
 
+# This tool no longer works since Twitch changed their API auth requirements #
+
 Display Twitch game box art in your stream with this small web page.
 
 Download all the files, there is a zip available here using the "Clone or Download" option on github and store them in a folder on your hard drive.

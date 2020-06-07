@@ -1,7 +1,7 @@
 'use strict';
 
 //Update this value to reflect your own channel name otherwise you will get images for what I am playing
-var channel = 'unshapedadrian';
+var channel = '';
 var displayGameName = false;
 var oAuthToken = '';
 
