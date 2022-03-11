@@ -7,7 +7,7 @@ https://www.unshapedadrian.co.uk/blog/code/how-to-get-my-twitch-tools-working/
 
 Display Twitch game box art in your stream with this small web page.
 
-Download all the files, there is a zip available here using the "Clone or Download" option on github and store them in a folder on your hard drive.
+Download all the files, there is a zip available here using the green "Code" option on github and store them in a folder on your hard drive.
 
 Edit the file twitchboxart.js in the scripts directory and change the channel name to reflect your channel name.
 Edit the var displayGameName = false; to var displayGameName = true; if you want to display the Game's name across the image.
