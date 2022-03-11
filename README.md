@@ -1,6 +1,9 @@
 # twitchboxart
 
 # This tool no longer works since Twitch changed their API auth requirements #
+# If you want to get it working please refer to this blog post #
+
+https://www.unshapedadrian.co.uk/blog/code/how-to-get-my-twitch-tools-working/
 
 Display Twitch game box art in your stream with this small web page.
 
